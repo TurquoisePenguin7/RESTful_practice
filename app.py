@@ -4,10 +4,13 @@ from peewee import SqliteDatabase, Model, CharField
 
 db = SqliteDatabase('test.db')
 
+# Setting up peewee ORM
 class Tasks(Model):
     task = CharField()
     status = CharField()
-    
+
+    # This model uses the "people.db" database.
+    # We are setting the "database" variable as a reference to the db, since Peewee will automatically infer the database table name from the name of the class.
     class Meta:
         database = db
 
