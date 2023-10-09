@@ -9,6 +9,7 @@ readme = "README.md"
 python = "^3.12"
 flask-restful = "^0.3.10"
 flask = "^3.0.0"
+peewee = "^3.16.3"
 
 
 [build-system]
