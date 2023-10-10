@@ -32,6 +32,17 @@ class addInfoToDB(Resource):
         task.save()
         return {'task': args["task"], "status": args["status"]}, 201
     
+    def put(self):
+        values = reqparse.RequestParser()
+        values.add_argument("status", type=str, default="")
+        values.add_argument("task", type=str, default="")
+        args = values.parse_args()
+        task_to_update = Tasks.get(Tasks.task == args['task'])
+        task_to_update.status = args['status']
+        task_to_update.save()
+        return { "status": "successfully updated" }, 200
+        
+    
 class root(Resource):
     def get(self):
         return {"Error": 404, "msg": "Not found :("}, 404
