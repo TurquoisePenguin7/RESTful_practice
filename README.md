@@ -1,6 +1,6 @@
 TODO:
 ========
-* Add PUT
+* [x] Add PUT
 * Add DELETE
 * Add extra functionality
 
