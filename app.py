@@ -19,7 +19,7 @@ db.create_tables([Tasks])
 app = Flask(__name__)
 api = Api(app)
 
-class addInfoToDB(Resource):
+class DataBaseOperations(Resource):
     def get(self):
         return {"tasks": {tasks.task: tasks.status for tasks in Tasks.select()}}, 200
     
@@ -53,7 +53,7 @@ class teapot(Resource):
 
 api.add_resource(teapot, "/teapot")
 api.add_resource(root, '/')
-api.add_resource(addInfoToDB,"/add")
+api.add_resource(DataBaseOperations,"/add")
 
 if __name__ == "__main__":
     app.run(debug=True)
