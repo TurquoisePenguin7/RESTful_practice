@@ -1,6 +1,6 @@
 from flask import Flask, request
 from flask_restful import Resource, Api, reqparse
-from peewee import SqliteDatabase, Model, CharField
+from peewee import SqliteDatabase, Model, CharField, PrimaryKeyField
 
 db = SqliteDatabase('test.db')
 
@@ -20,28 +20,39 @@ app = Flask(__name__)
 api = Api(app)
 
 class DataBaseOperations(Resource):
-    def get(self):
-        return {"tasks": {tasks.task: tasks.status for tasks in Tasks.select()}}, 200
     
-    def post(self):
+    def get_arguments(self):
         values = reqparse.RequestParser()
+        values.add_argument("id", type=int, default="") # will implement the changes for the id later
         values.add_argument("task", type=str, default="")
         values.add_argument("status", type=str, default="")
         args = values.parse_args()
+        return args
+    
+    def get(self):
+        return {"tasks": {tasks.id: {"task": tasks.task, "status": tasks.status} for tasks in Tasks.select()}}, 200
+    
+    def post(self):
+        args = self.get_arguments()
         task = Tasks.create(task=args['task'], status=args['status'])
         task.save()
         return {'task': args["task"], "status": args["status"]}, 201
     
     def put(self):
-        values = reqparse.RequestParser()
-        values.add_argument("status", type=str, default="")
-        values.add_argument("task", type=str, default="")
-        args = values.parse_args()
+        args = self.get_arguments()
         task_to_update = Tasks.get(Tasks.task == args['task'])
         task_to_update.status = args['status']
         task_to_update.save()
         return { "status": "successfully updated" }, 200
-        
+    
+    def delete(self):
+        args = self.get_arguments()
+        try:
+            task_to_delete = Tasks.get(Tasks.task == args['task'])
+            task_to_delete.delete_instance()
+        except Tasks.DoesNotExist:
+            return {"failed": "Task doesn't exist"}, 400
+        return {"success": {"Removed": {"task": args['task'], "status": args['status']}}}, 200
     
 class root(Resource):
     def get(self):
@@ -53,7 +64,7 @@ class teapot(Resource):
 
 api.add_resource(teapot, "/teapot")
 api.add_resource(root, '/')
-api.add_resource(DataBaseOperations,"/add")
+api.add_resource(DataBaseOperations,"/dbops")
 
 if __name__ == "__main__":
     app.run(debug=True)
