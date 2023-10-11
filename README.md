@@ -1,8 +1,9 @@
 TODO:
 ========
 * [x] Add PUT
-* Add DELETE
+* [x] Add DELETE
 * Add extra functionality
+* Fix some bugs and exception handling
 
 EXTRA:
 ========
