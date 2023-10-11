@@ -1,6 +1,6 @@
 from flask import Flask, request
 from flask_restful import Resource, Api, reqparse
-from peewee import SqliteDatabase, Model, CharField, PrimaryKeyField
+from peewee import SqliteDatabase, Model, CharField
 
 db = SqliteDatabase('test.db')
 
