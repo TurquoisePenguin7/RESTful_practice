@@ -31,7 +31,7 @@ class ArgumentHandler():
         return args
 
 class TaskListAPI(Resource):
-    """Basic API entry, provides with GET and POST requests on sending and retrieving the files."""
+    """Basic API entry, provides with GET and POST requests on sending and retrieving the entries."""
     
     def get(self):
         return {"tasks": {tasks.id: {"task": tasks.task, "status": tasks.status} for tasks in Tasks.select()}}, 200
@@ -44,7 +44,9 @@ class TaskListAPI(Resource):
 
 class TaskAPI(Resource):
     """Part of the API that works with each entry individually, supports GET, PUT, DELETE on each entry."""
+    
     def get(self, taskID):
+        """A class method to retrieve the specified entry"""
         try:
             task_id = Tasks.get(Tasks.id == taskID)
             return {"id": task_id.id, "task": task_id.task, "status": task_id.status}, 200
@@ -52,6 +54,7 @@ class TaskAPI(Resource):
             return {"failed": "Task doesn't exist"}, 400
     
     def put(self, taskID):
+        """A class method to update the specified entry"""
         args = ArgumentHandler.get_arguments()
         try:
             task_to_update = Tasks.get(Tasks.id == taskID)
@@ -62,6 +65,7 @@ class TaskAPI(Resource):
             return {"failed": "Task doesn't exist, double-check your id number"}, 400
 
     def delete(self, taskID):
+        """A class method to remove the specified entry"""
         args = ArgumentHandler.get_arguments()
         try:
             task_to_delete = Tasks.get(Tasks.id == taskID)
