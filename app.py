@@ -19,52 +19,60 @@ db.create_tables([Tasks])
 app = Flask(__name__)
 api = Api(app)
 
-class DataBaseOperations(Resource):
-    
-    def get_arguments(self):
+class ArgumentHandler():
+    """A helper class to handle the arguments, shortening the code substantially."""
+    @staticmethod
+    def get_arguments():
         values = reqparse.RequestParser()
         values.add_argument("id", type=int, default="") # will implement the changes for the id later
         values.add_argument("task", type=str, default="")
         values.add_argument("status", type=str, default="")
         args = values.parse_args()
         return args
+
+class TaskListAPI(Resource):
+    """Basic API entry, provides with GET and POST requests on sending and retrieving the files."""
     
     def get(self):
         return {"tasks": {tasks.id: {"task": tasks.task, "status": tasks.status} for tasks in Tasks.select()}}, 200
     
     def post(self):
-        args = self.get_arguments()
+        args = ArgumentHandler.get_arguments()
         task = Tasks.create(task=args['task'], status=args['status'])
         task.save()
         return {'task': args["task"], "status": args["status"]}, 201
-    
-    def put(self):
-        args = self.get_arguments()
-        task_to_update = Tasks.get(Tasks.task == args['task'])
-        task_to_update.status = args['status']
-        task_to_update.save()
-        return { "status": "successfully updated" }, 200
-    
-    def delete(self):
-        args = self.get_arguments()
+
+class TaskAPI(Resource):
+    """Part of the API that works with each entry individually, supports GET, PUT, DELETE on each entry."""
+    def get(self, taskID):
         try:
-            task_to_delete = Tasks.get(Tasks.task == args['task'])
+            task_id = Tasks.get(Tasks.id == taskID)
+            return {"id": task_id.id, "task": task_id.task, "status": task_id.status}, 200
+        except Tasks.DoesNotExist:
+            return {"failed": "Task doesn't exist"}, 400
+    
+    def put(self, taskID):
+        args = ArgumentHandler.get_arguments()
+        try:
+            task_to_update = Tasks.get(Tasks.id == taskID)
+            task_to_update.status = args['status']
+            task_to_update.save()
+            return { "status": "successfully updated" }, 200
+        except Tasks.DoesNotExist:
+            return {"failed": "Task doesn't exist, double-check your id number"}, 400
+
+    def delete(self, taskID):
+        args = ArgumentHandler.get_arguments()
+        try:
+            task_to_delete = Tasks.get(Tasks.id == taskID)
             task_to_delete.delete_instance()
         except Tasks.DoesNotExist:
             return {"failed": "Task doesn't exist"}, 400
         return {"success": {"Removed": {"task": args['task'], "status": args['status']}}}, 200
-    
-class root(Resource):
-    def get(self):
-        return {"Error": 404, "msg": "Not found :("}, 404
-    
-class teapot(Resource):
-    def get(self):
-        return {"Error": 418, "msg": "I am a little teapot"}, 418
 
-api.add_resource(teapot, "/teapot")
-api.add_resource(root, '/')
-api.add_resource(DataBaseOperations,"/dbops")
+
+api.add_resource(TaskListAPI,"/api/tasks", "/api/tasks/")
+api.add_resource(TaskAPI,"/api/tasks/<int:taskID>")
 
 if __name__ == "__main__":
     app.run(debug=True)
